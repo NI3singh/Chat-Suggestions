@@ -17,7 +17,7 @@
 # WITH GROQ API
 # from groq import Groq
 
-# client = Groq(api_key="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")
+# client = Groq(api_key=")
 
 # def chat_reply_suggestons(user_input):
 #    prompt = f"generate 3 chat reply suggestions for the user input in human chatting language. here is the user input : {user_input} and remember just reply with the suggestions only nothing else and all three suggestions in single python list format"
@@ -45,7 +45,7 @@
 # from groq import Groq
 
 # # Initialize the Groq client
-# client = Groq(api_key="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")
+# client = Groq(api_key="")
 
 # # FastAPI app initialization
 # app = FastAPI()
@@ -95,7 +95,7 @@
 
 from groq import Groq
 
-client = Groq(api_key="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")
+client = Groq(api_key="")
 
 def chat_reply_suggestions(user_input):
     prompt = f"""
