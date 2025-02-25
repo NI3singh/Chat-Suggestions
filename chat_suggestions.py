@@ -95,14 +95,25 @@
 
 from groq import Groq
 from dotenv import load_dotenv
-
+import os
+import json
+from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 load_dotenv()
 
-import os
+app = FastAPI()
+
 
 client = Groq(api_key = os.getenv("Groq_API_KEY"))
 
-def chat_reply_suggestions(user_input):
+class ChatInput(BaseModel):
+    user_input: str
+
+@app.post("/chat-reply/")
+async def chat_reply_suggestions(input_data: ChatInput):
+    """
+    Generate 4 chat reply suggestions using Groq API.
+    """
     prompt = f"""
         Your task is to generate *exactly 4 chat reply suggestions* for the user input. The replies must be written in a natural, human-friendly tone. *Do not act as a chatbot* — respond as a person would in a real-life conversation.
 
@@ -114,27 +125,36 @@ def chat_reply_suggestions(user_input):
         5. The 4 suggestions should be listed in a single Python list format.  
         6. *Do not include anything else* in the response (no extra sentences, no instructions, etc.), just the suggestions in list format.  
 
-        Here is the user input: {user_input}  
+        Here is the user input: {input_data.user_input}  
 
         **Output Format**: ["suggestion 1", "suggestion 2", "suggestion 3", "suggestion 4"]
         """
 
     try:
-    
         response = client.chat.completions.create(
-            # model="llama-3.3-70b-versatile",
-            model="llama-3.3-70b-specdec",
+            model="llama-3.3-70b-specdec",  # Ensure it's a valid model
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3
         )
 
-        suggestions = response.choices[0].message.content.strip()
-        return suggestions
-    except Exception as e:
-        return {"Error" : str(e)}
-    
+        suggestions_text = response.choices[0].message.content.strip()
 
-user_input = input("Enter chat : ")
-suggestions = chat_reply_suggestions(user_input)
-print(suggestions)
+        # Ensure the response is a valid Python list
+        try:
+            suggestions = json.loads(suggestions_text)  # Safely parse JSON response
+            if isinstance(suggestions, list) and len(suggestions) == 4:
+                return {"suggestions": suggestions}
+            else:
+                raise ValueError("Invalid response format from Groq API")
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Invalid response format!")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Root endpoint
+@app.get("/")
+def home():
+    return {"message": "Chat Reply Suggestion API is running!"}
+
 
