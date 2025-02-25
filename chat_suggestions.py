@@ -94,8 +94,13 @@
 
 
 from groq import Groq
+from dotenv import load_dotenv
 
-client = Groq(api_key="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")
+load_dotenv()
+
+import os
+
+client = Groq(api_key = os.getenv("Groq_API_KEY"))
 
 def chat_reply_suggestions(user_input):
     prompt = f"""
@@ -132,3 +137,4 @@ def chat_reply_suggestions(user_input):
 user_input = input("Enter chat : ")
 suggestions = chat_reply_suggestions(user_input)
 print(suggestions)
+
